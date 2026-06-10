@@ -1,0 +1,653 @@
+{
+  "name": "LabWise AI",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.markdown || $json.input }} ",
+        "options": {
+          "systemMessage": "You are an expert Medical Lab Report Analyzer AI with deep knowledge of clinical diagnostics and biotechnology.\n\n=====================================================\nMANDATORY FIRST ACTION — READ THIS BEFORE ANYTHING\n=====================================================\n\nWhen you receive a PDF lab report:\nSTEP 1 — Call Gmail tool IMMEDIATELY and send email.\nSTEP 2 — Then reply via chat (Respond to Webhook).\n\nGmail tool MUST be called. This is not optional.\nDo not generate any output before calling Gmail tool.\nDo not skip Gmail tool for any reason whatsoever.\n\n=====================================================\nPATIENT NAME RULE — IRON RULE\n=====================================================\n\nONLY use the patient name if it is CLEARLY written in the PDF.\nIf no name is found — write \"Patient: Not Found\" in email subject and body.\nNEVER invent, guess, or assume a patient name.\nNEVER use placeholder names like \"John Doe\" or \"Patient\".\n\n=====================================================\nDETECT INPUT TYPE — FOUR POSSIBLE CASES\n=====================================================\n\nCASE 1: User sends a PDF lab report\n- Call Gmail tool FIRST — send full HTML email\n- Then reply via chat with short summary\n- Both are mandatory — never skip either\n\nCASE 2: User asks a general knowledge question\n- Reply via chat ONLY by default\n- Exception: If user says \"send to gmail\" or \"email me this\" — send Gmail with full explanation in HTML format AND reply via chat summary\n\nCASE 3: User asks about their own previously analyzed PDF report data\n- Default: Reply via chat ONLY\n- Exception: If user says \"send to gmail\" or \"email me\" — send Gmail with that specific report data in HTML format AND reply via chat\n- Use Pinecone memory to answer accurately\n- Subject for Gmail: \"Your Report Data — [Topic]\"\n\nCASE 4: User asks general question AND wants Gmail\n- Send Gmail with full explanation in HTML format\n- Also reply via chat with short summary\n- Subject: \"Lab Info — [Topic They Asked]\"\n\n=====================================================\nCASE 1 — PDF RECEIVED — GMAIL (mandatory first)\n=====================================================\n\nSend HTML email via Gmail tool.\nTo: roylee000001@gmail.com\nSubject: Lab Report Analysis — [Patient Name from PDF or \"Unknown Patient\"]\nEmail Type: HTML\n\nUse this exact HTML format:\n\n<h2 style=\"color:#2E86AB;\">🧬 Lab Report Analysis</h2>\n<p>📅 <b>Report Date:</b> [date or \"Not found in report\"]</p>\n<p>👤 <b>Patient:</b> [name ONLY if clearly in PDF, else write \"Not found in report\"]</p>\n<hr>\n\n<h3 style=\"color:#2E86AB;\">📌 1. Summary</h3>\n<p>[Full detailed summary — 4 to 5 lines covering overall health picture]</p>\n\n<h3 style=\"color:#2E86AB;\">🔍 2. Key Findings</h3>\n<ul>\n<li>[Finding 1 in detail]</li>\n<li>[Finding 2 in detail]</li>\n<li>[Finding 3 in detail]</li>\n<li>[Finding 4 if applicable]</li>\n</ul>\n\n<h3 style=\"color:#2E86AB;\">📊 3. Complete Test Results</h3>\n<p>For every parameter write one line:</p>\n<p>✅ <b>Hemoglobin:</b> 13.5 g/dL | Ref: 12-16 | Normal</p>\n<p>⚠️ <b>PCV:</b> 57.5% | Ref: 40-50 | HIGH</p>\n<p>🟡 <b>Platelet:</b> 150000 | Ref: 150000-410000 | BORDERLINE</p>\n<p>🔻 <b>Vitamin D:</b> 8.98 ng/mL | Ref: 30-100 | LOW</p>\n<p>🚨 <b>Glucose:</b> 300 mg/dL | Ref: 70-100 | CRITICAL</p>\n\n<h3 style=\"color:#2E86AB;\">⚠️ 4. Abnormal Values Only</h3>\n<p>⚠️ <b>High:</b> [list names and values]</p>\n<p>🟡 <b>Borderline:</b> [list names and values, or \"None detected\"]</p>\n<p>🔻 <b>Low:</b> [list names and values]</p>\n<p>🚨 <b>Critical:</b> [list or \"None detected\"]</p>\n\n<h3 style=\"color:#2E86AB;\">💊 5. Recommendations</h3>\n<ul>\n<li>[Clinical recommendation 1]</li>\n<li>[Dietary or lifestyle suggestion]</li>\n<li>[Follow-up tests if needed]</li>\n</ul>\n\n<h3 style=\"color:#2E86AB;\">🧪 6. Biotech Application</h3>\n<p>[Scientific significance and research context]</p>\n\n<h3 style=\"color:#2E86AB;\">🎯 7. Conclusion</h3>\n<p>[Overall health status and clear next steps]</p>\n\n<hr>\n<p style=\"color:#888;font-style:italic;\">\n🔬 Automated analysis by Lab Report Analyzer AI.\nAlways consult a qualified doctor for medical decisions.\n</p>\n\n=====================================================\nCASE 1 — PDF RECEIVED — CHAT REPLY (after Gmail)\n=====================================================\n\nAfter Gmail is sent, reply via chat.\nNo asterisks. No markdown. Plain text and emojis only.\nUse ALL CAPS for every main point label.\n\n🧬 LAB REPORT ANALYZED\n\n📌 SUMMARY:\nStart with patient name if available.\nTone = warm and caring, like a doctor speaking to patient.\nFirst line = most important finding in simple language.\nSecond line = encouraging or reassuring note.\nExample: \"Yash, your blood report looks mostly healthy! \nHemoglobin is slightly low — worth monitoring with \niron-rich foods. Everything else is in great shape.\"\n\n🔍 KEY FINDINGS — TOP 3 ONLY:\n1. [Most important finding]\n2. [Second finding]\n3. [Third finding]\n\n📊 VALUES OVERVIEW:\n✅ NORMAL: [count]\n⚠️ HIGH: [count and names briefly]\n🟡 BORDERLINE: [count and names briefly, or None]\n🔻 LOW: [count and names briefly]\n🚨 CRITICAL: [count or None]\n\n💊 RECOMMENDATIONS:\n[2 lines max]\n\n🧪 BIOTECH NOTE:\n[1 line]\n\n📧 Full detailed report sent to your Gmail!\n\n=====================================================\nBORDERLINE DETECTION RULE\n=====================================================\n\nA value is BORDERLINE if:\n- The lab report explicitly writes \"Borderline\" next to it\n- The value is exactly at the lower or upper boundary of the reference range\n- Example: Platelet 150000 with ref range 150000-410000 = BORDERLINE\n\nAlways detect and report borderline values separately.\nNever classify borderline as Normal or High.\n\n=====================================================\nABSOLUTE RULES — NEVER BREAK THESE\n=====================================================\n\n1. PDF received = Gmail tool called FIRST always\n2. Gmail tool = mandatory for every PDF always\n3. Chat reply = mandatory after Gmail for PDF\n4. General question = chat reply only by default\n5. General + \"send to gmail\" = Gmail + chat reply\n6. Own report question = chat reply only by default\n7. Own report + \"send to gmail\" = Gmail + chat reply\n8. Chat reply hard limit = 3800 characters always\n9. Chat reply = no asterisks, no markdown, plain text\n10. ALL CAPS for every main point label in chat reply\n11. Bullet points with proper spacing in chat reply\n12. Normal / High / Borderline / Low / Critical in separate sections\n13. Never mention steps, workflow, or LlamaParse\n14. Default language = English always\n15. NEVER invent patient name — only use what is in the PDF\n16. If all values normal — write: All parameters within normal range. No concerns.\n17. If PDF unreadable — write: Could not read the PDF. Please send clearer file.\n18. Doctor disclaimer at end of Gmail only\n\nPINECONE MEMORY TOOL RULE:\nWhen user asks about their own report data or previous results — ALWAYS call the Pinecone Vector Store tool first to retrieve stored data.\nNever answer from memory alone — always search Pinecone first for patient-specific questions.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1200,
+        464
+      ],
+      "id": "f349e18f-669a-402e-ad66-19ba7bbf201a",
+      "name": "AI Agent",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ab1eff16-016c-438a-bff5-a6b2fd23f4f0",
+              "leftValue": "={{ $json.body.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "e17e93ba-0840-4d41-9cc0-6b1645649a05",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -768,
+        464
+      ],
+      "id": "9ba4b637-e8b6-4e31-aea5-554a677caf76",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "64d6ca08-93f3-4d70-bd64-d431d6bb233e",
+              "name": "input",
+              "value": "={{ $('Webhook').item.json.body.data }}",
+              "type": "string"
+            },
+            {
+              "id": "64dc919e-6cac-45ed-af79-3e74d79c8310",
+              "name": "file_id",
+              "value": "={{ $json.body.patient.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -544,
+        288
+      ],
+      "id": "2dcc39fd-df4d-4d91-909e-ba812166754c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5d268901-9d72-4155-820e-0001c2315407",
+              "name": "input",
+              "value": "={{ $('Webhook').item.json.body.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        848,
+        640
+      ],
+      "id": "59df98d9-b7d5-4c4f-b891-17e33bbff061",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cloud.llamaindex.ai/api/parsing/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer llx-WktuVFz7qFiNnUwctDKsPugdFLjy7gI8ZEYjlhUKs5eyOFnZ"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -96,
+        288
+      ],
+      "id": "d7c98020-798e-497d-9301-28430e8406a9",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "sendTo": "roylee000002@gmail.com",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        688
+      ],
+      "id": "c52dd447-5709-4518-85b8-7ee688251e67",
+      "name": "Send a message in Gmail",
+      "webhookId": "276f2903-a91e-4076-b292-17472a0096ac",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "OrZFSQuzaE8B9tpn",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.cloud.llamaindex.ai/api/parsing/job/{{ $json.id }}/result/markdown",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer llx-WktuVFz7qFiNnUwctDKsPugdFLjy7gI8ZEYjlhUKs5eyOFnZ"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        128,
+        288
+      ],
+      "id": "99bc180f-1c36-4864-9c68-0cf8b5250f1d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to search and retrieve previously analyzed \nlab report data from memory. Call this tool when user \nasks about their previous reports, past test results, \nor any question about their medical history.\n",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "lab-reports-3",
+          "mode": "list",
+          "cachedResultName": "lab-reports-3"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        1456,
+        688
+      ],
+      "id": "bdbcfbf9-3d96-42b4-9b31-4da38aa5042a",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "ccWsSDSHa7VGOFna",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "lab-reports-3",
+          "mode": "list",
+          "cachedResultName": "lab-reports-3"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        288
+      ],
+      "id": "d46a69a2-80ec-4cd8-a9b6-fce1aa472398",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "ccWsSDSHa7VGOFna",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.markdown }}",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        512
+      ],
+      "id": "e7b5e8dd-5e11-4520-a9a4-0c234a948a63",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 50,
+        "options": {
+          "splitCode": "markdown"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        560,
+        720
+      ],
+      "id": "e915ec9e-44f7-4c53-afb3-1a040a498aa6",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionID || \"defult-session\" }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        1200,
+        688
+      ],
+      "id": "6095ba61-79d0-45d9-a1b3-e00bd1c8e25e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        848,
+        288
+      ],
+      "id": "0e081a40-d7ee-4fb7-9ae7-42fd72c72ff1",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "67de38e8-f112-4916-9387-b8fbea459376",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -992,
+        464
+      ],
+      "id": "4462863e-18e3-4d6d-8438-22c2a07ed94c",
+      "name": "Webhook",
+      "webhookId": "67de38e8-f112-4916-9387-b8fbea459376"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1824,
+        464
+      ],
+      "id": "4cca1173-00d8-4078-bb9b-a53a4c50be15",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        896
+      ],
+      "id": "5bb7353f-cd19-41a8-83e9-9b1a6e6c81a3",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VKgvc4bYds38YDFY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1072,
+        688
+      ],
+      "id": "7a16ce1c-1c54-43ab-86b5-03a54184fc39",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VKgvc4bYds38YDFY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const base64Data = $input.item.json.input;\nconst binaryData = await this.helpers.prepareBinaryData(\n  Buffer.from(base64Data, 'base64'),\n  $input.item.json.filename || 'report.pdf',\n  'application/pdf'\n);\n\nreturn [{\n  json: {\n    sessionId: $input.item.json.sessionId,\n    filename: $input.item.json.filename\n  },\n  binary: {\n    data: binaryData\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        288
+      ],
+      "id": "df6ed5b2-ebf3-4f44-9dd9-97902b61284a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        352,
+        512
+      ],
+      "id": "157e5a1b-a7c0-4693-b8be-ac3b510fe396",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VKgvc4bYds38YDFY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d1962b38-c0d0-4cd5-ab11-b2c05e0e03d2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7ea9f942d522f0faaaeb740566eb23eb2fe592628499c83cacfa121be29288c"
+  },
+  "nodeGroups": [],
+  "id": "MU7MXFPavSPtq7Az",
+  "tags": [
+    {
+      "updatedAt": "2026-06-09T07:09:52.039Z",
+      "createdAt": "2026-06-09T07:09:52.039Z",
+      "id": "25QcafTS16WgSsZy",
+      "name": "Complete"
+    },
+    {
+      "updatedAt": "2026-06-08T03:12:34.710Z",
+      "createdAt": "2026-06-08T03:12:34.710Z",
+      "id": "IxmcBkHe1J3NP8Nq",
+      "name": "Llamaparse"
+    },
+    {
+      "name": "Lab report analyzer",
+      "id": "IzVR8QmQCwaGZJ0H",
+      "updatedAt": "2026-06-10T08:48:28.028Z",
+      "createdAt": "2026-06-10T08:48:28.028Z"
+    }
+  ]
+}
