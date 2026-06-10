@@ -12,11 +12,24 @@
 
 ## What It Does
 
-- **Abnormality detection** — HIGH / LOW / BORDERLINE / CRITICAL flags
+LabWise AI analyzes medical lab reports (PDFs) and returns structured AI summaries. Built for patients and clinicians who need fast, intelligent interpretation of lab results.
+
+- **Abnormality detection** — HIGH / LOW / BORDERLINE / CRITICAL flags per biomarker
 - **Plain language summary** — explains results in simple terms
-- **Gmail HTML report** — formatted report delivered to email
+- **Gmail HTML report** — color-coded formatted report delivered to email
 - **Multi-report memory** — Pinecone stores past reports for trend tracking
-- **Health Score** — overall score calculated from results
+- **AI chat** — ask follow-up questions about your results
+
+---
+
+## Frontend (Lovable)
+
+- Clean teal + white UI built on Lovable
+- PDF upload via drag-and-drop
+- AI summary displayed after analysis
+- Borderline / High / Low / Critical flags shown per biomarker
+- AI chat interface for follow-up questions
+- Fully responsive web application
 
 ---
 
@@ -29,7 +42,28 @@
 | PDF Parsing | LlamaParse |
 | Vector Memory | Pinecone (3072 dims) |
 | LLM | Gemini 2.5 Flash |
+| Embeddings | Gemini Embeddings |
 | Email | Gmail HTML |
+
+---
+
+## Architecture
+
+```
+User uploads PDF (Lovable frontend)
+        ↓
+n8n Webhook receives file
+        ↓
+LlamaParse extracts text from PDF
+        ↓
+Gemini 2.5 Flash analyzes biomarkers
+        ↓
+Results stored in Pinecone (patient memory)
+        ↓
+Gmail sends formatted HTML report
+        ↓
+Frontend displays AI summary + flags
+```
 
 ---
 
@@ -40,7 +74,15 @@
 - Gmail HTML report with color-coded results
 - Pinecone vector memory for multi-report tracking
 - AI chat for follow-up questions
-- Health score dashboard
+
+---
+
+## Technical Notes
+
+- Pinecone dimensions: 3072 (Gemini embeddings)
+- PDF sent as binary to LlamaParse
+- Session ID used for multi-report patient memory
+- Gemini used for both LLM and embeddings
 
 ---
 
