@@ -10,6 +10,46 @@
 
 ---
 
+## The Problem
+
+Lab reports are confusing. Medical jargon, reference ranges, abnormal flags — most patients don't understand what their results mean. They wait days for a doctor's appointment just to hear "everything looks normal" or "this value is slightly high."
+
+For clinicians, manually reviewing and explaining multiple reports takes significant time.
+
+---
+
+## The Solution
+
+LabWise AI instantly analyzes any lab report PDF and returns:
+- Plain language explanation of every biomarker
+- Clear HIGH / LOW / BORDERLINE / CRITICAL flags
+- Personalized email report with color-coded results
+- Memory of past reports for trend tracking over time
+
+No medical jargon. No waiting. Just clear answers.
+
+---
+
+## Time & Effort Saved
+
+| Task | Manual | LabWise AI |
+|---|---|---|
+| Understanding report | 1-2 days (doctor visit) | 30 seconds |
+| Identifying abnormal values | Manual scanning | Instant AI detection |
+| Getting a written summary | Not available | Auto-delivered to Gmail |
+| Tracking trends over time | Manual comparison | Automatic via Pinecone memory |
+
+---
+
+## Final Output
+
+- ✅ Color-coded HTML email report delivered to Gmail
+- ✅ Each biomarker flagged — GOOD / BORDERLINE / HIGH / LOW / CRITICAL
+- ✅ Plain language summary anyone can understand
+- ✅ AI chat for follow-up questions about results
+
+---
+
 ## What It Does
 
 LabWise AI analyzes medical lab reports (PDFs) and returns structured AI summaries. Built for patients and clinicians who need fast, intelligent interpretation of lab results.
@@ -64,16 +104,6 @@ Gmail sends formatted HTML report
         ↓
 Frontend displays AI summary + flags
 ```
-
----
-
-## Key Features
-
-- PDF upload via drag-and-drop
-- Borderline / High / Low / Critical detection
-- Gmail HTML report with color-coded results
-- Pinecone vector memory for multi-report tracking
-- AI chat for follow-up questions
 
 ---
 
