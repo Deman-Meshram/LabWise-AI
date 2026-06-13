@@ -1,5 +1,10 @@
 # LabWise AI — Lab Report Analyzer
 
+## 🎬 Demo Video
+[▶ Watch Demo on YouTube](https://youtu.be/BfBKdg_D1Q4)
+
+---
+
 > AI-powered lab report analysis for patients and clinicians.
 
 
